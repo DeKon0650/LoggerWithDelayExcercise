@@ -4,7 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using LoggerWithDelayExcercise.Core;
+//using LoggerWithDelayExcercise.Core;
+using LoggerWithDelayExcercise.Core.Implementations.ListLogger;
 using LoggerWithDelayExcercise.Core.Implementations.MessageToFile;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static LoggerWithDelayExcercise.Core.LogHandler;
@@ -57,7 +58,7 @@ namespace LoggerWithDelayExcercise.Tests
             }
             foreach (var testLoggingMessage in loggingMessages)
             {
-                bool shouldBeLogged = testLoggingMessage.Delay > logDelay;
+                bool shouldBeLogged = testLoggingMessage.Delay >= logDelay;
                 Assert.AreEqual(shouldBeLogged, loggedMessages.Contains(testLoggingMessage.Message));
             }
         }

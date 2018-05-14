@@ -1,7 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Threading;
-using LoggerWithDelayExcercise.Core;
+//using LoggerWithDelayExcercise.Core;
+using LoggerWithDelayExcercise.Core.Implementations.ListLogger;
 using LoggerWithDelayExcercise.Core.Implementations.MessageToFile;
 
 namespace LoggerWithDelayExcercise.ConsoleTest
