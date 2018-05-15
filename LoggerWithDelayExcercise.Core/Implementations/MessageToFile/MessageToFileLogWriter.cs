@@ -5,7 +5,7 @@ namespace LoggerWithDelayExcercise.Core.Implementations.MessageToFile
 {
     public class MessageToFileLogWriter : ILogWriter
     {
-        private static readonly object FileLocker = new object();
+        private readonly object _fileLocker = new object();
         private readonly string _fileName;
 
         public MessageToFileLogWriter(string fileName)
@@ -16,7 +16,7 @@ namespace LoggerWithDelayExcercise.Core.Implementations.MessageToFile
 
         public void WriteLog(string message)
         {
-            lock (FileLocker)
+            lock (_fileLocker)
             {
                 File.AppendAllLines(_fileName, new[] {message});
             }
