@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using LoggerWithDelayExcercise.Core.Implementations.MessageToFile;
 
 namespace LoggerWithDelayExcercise.Core
 {
@@ -12,12 +11,14 @@ namespace LoggerWithDelayExcercise.Core
 
         private readonly object _locker = new object();
         private readonly List<LogHandler> _logs = new List<LogHandler>();
+        private readonly ILogWriter _logWriter;
         private readonly TimeSpan _delay;
-        private Task _checkTask;
         private readonly CancellationTokenSource _cancellationTokenSource;
+        private Task _checkTask;
 
-        public LoggerWithDelay(TimeSpan delay)
+        public LoggerWithDelay(TimeSpan delay, ILogWriter logWriter)
         {
+            _logWriter = logWriter;
             _delay = delay;
             _cancellationTokenSource = new CancellationTokenSource();
             _checkTask = Task.Factory.StartNew(CheckLogs, TaskCreationOptions.LongRunning);
@@ -79,7 +80,7 @@ namespace LoggerWithDelayExcercise.Core
 
         private void DoLog(LogHandler log)
         {
-            new MessageToFileLogWriterFactory(log.Message).CreateLogWriter().WriteLog();
+            _logWriter.WriteLog(log.Message);
         }
     }
 }

@@ -8,7 +8,7 @@ namespace LoggerWithDelayExcercise.ConsoleTest
 {
     public class Program
     {
-        private static LoggerWithDelay _logger = new LoggerWithDelay(TimeSpan.FromSeconds(5));
+        private static LoggerWithDelay _logger = new LoggerWithDelay(TimeSpan.FromSeconds(5), new MessageToFileLogWriterFactory().CreateLogWriter());
 
         public static void Main()
         {

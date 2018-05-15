@@ -18,7 +18,7 @@ namespace LoggerWithDelayExcercise.Tests
             const int threadCount = 100;
             const int maxSecondsDelay = 60;
             var logDelay = TimeSpan.FromSeconds(maxSecondsDelay / 2);
-            var logger = new LoggerWithDelay(logDelay);
+            var logger = new LoggerWithDelay(logDelay, new MessageToFileLogWriterFactory().CreateLogWriter());
             var random = new Random();
             var loggingMessages = new TestLoggingMessage[threadCount];
             var testTasks = new Task[loggingMessages.Length];
