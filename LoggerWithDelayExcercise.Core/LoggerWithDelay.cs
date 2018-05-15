@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,8 +9,7 @@ namespace LoggerWithDelayExcercise.Core
     {
         public static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(1);
 
-        private readonly object _locker = new object();
-        private readonly List<LogHandler> _logs = new List<LogHandler>();
+        private readonly ConcurrentDictionary<Guid, LogHandler> _logs = new ConcurrentDictionary<Guid, LogHandler>();
         private readonly ILogWriter _logWriter;
         private readonly TimeSpan _delay;
         private readonly CancellationTokenSource _cancellationTokenSource;
@@ -27,8 +26,7 @@ namespace LoggerWithDelayExcercise.Core
         public LogHandler LogWithDelay(string message)
         {
             var log = new LogHandler(message);
-            lock (_locker)
-                _logs.Add(log);
+            _logs.TryAdd(log.UniqueId, log);
             log.StartLogging();
             return log;
         }
@@ -43,11 +41,9 @@ namespace LoggerWithDelayExcercise.Core
             do
             {
                 Thread.Sleep(CheckInterval);
-                LogHandler[] logs;
-                lock (_locker)
-                    logs = _logs.ToArray();
-                foreach (var log in logs)
+                foreach (var logFromDic in _logs)
                 {
+                    var log = logFromDic.Value;
                     if (log.ElapsedTime >= _delay)
                     {
                         DoLog(log);
@@ -63,8 +59,7 @@ namespace LoggerWithDelayExcercise.Core
 
         public void RemoveFromLogList(LogHandler log)
         {
-            lock (_locker)
-                _logs.Remove(log);
+            _logs.TryRemove(log.UniqueId, out log);
         }
 
         private void DoLog(LogHandler log)

@@ -5,7 +5,8 @@ namespace LoggerWithDelayExcercise.Core
 {
     public class LogHandler
     {
-        public string Message { get; }
+        public readonly Guid UniqueId = Guid.NewGuid();
+        public readonly string Message;
         public bool WasCanceled { get; private set; }
         public TimeSpan ElapsedTime => _stopwatch.Elapsed;
 
