@@ -6,7 +6,7 @@ namespace LoggerWithDelayExcercise.Core
     public class LogHandler
     {
         public string Message { get; }
-        public bool WasCanceled { get; private set; } = false;
+        public bool WasCanceled { get; private set; }
         public TimeSpan ElapsedTime => _stopwatch.Elapsed;
 
         private readonly Stopwatch _stopwatch = new Stopwatch();
@@ -18,7 +18,11 @@ namespace LoggerWithDelayExcercise.Core
 
         public void StartLogging()
         {
-            if (!_stopwatch.IsRunning) _stopwatch.Restart();
+            if (!_stopwatch.IsRunning)
+            {
+                _stopwatch.Restart();
+                WasCanceled = false;
+            }
         }
 
         public void Cancel()
