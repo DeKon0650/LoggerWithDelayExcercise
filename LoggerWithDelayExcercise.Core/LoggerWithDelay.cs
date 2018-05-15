@@ -29,6 +29,7 @@ namespace LoggerWithDelayExcercise.Core
             var log = new LogHandler(message);
             lock (_locker)
                 _logs.Add(log);
+            log.StartLogging();
             return log;
         }
 
@@ -45,31 +46,19 @@ namespace LoggerWithDelayExcercise.Core
                 LogHandler[] logs;
                 lock (_locker)
                     logs = _logs.ToArray();
-                var checkDate = DateTime.Now;
                 foreach (var log in logs)
                 {
-                    bool needLog = false;
-                    bool needRemoveFromLogList = false;
-                    lock (log.Locker)
+                    if (log.ElapsedTime >= _delay)
                     {
-                        if (log.CancelDate.HasValue)
-                        {
-                            if (log.CancelDate - log.StartDate > _delay) needLog = true;
-                            needRemoveFromLogList = true;
-                        }
-                        else
-                        {
-                            if (log.StartDate + _delay < checkDate)
-                            {
-                                needLog = true;
-                                needRemoveFromLogList = true;
-                            }
-                        }
+                        DoLog(log);
+                        RemoveFromLogList(log);
                     }
-                    if (needLog) DoLog(log);
-                    if (needRemoveFromLogList) RemoveFromLogList(log);
+                    else if (log.WasCanceled)
+                    {
+                        RemoveFromLogList(log);
+                    }
                 }
-            } while (!_cancellationTokenSource.Token.IsCancellationRequested);
+            } while (!_cancellationTokenSource.IsCancellationRequested);
         }
 
         public void RemoveFromLogList(LogHandler log)

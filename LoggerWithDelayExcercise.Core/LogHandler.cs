@@ -1,27 +1,30 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace LoggerWithDelayExcercise.Core
 {
     public class LogHandler
     {
-        public readonly object Locker = new object();
-
-        public DateTime StartDate { get; }
         public string Message { get; }
-        public DateTime? CancelDate { get; private set; }
+        public bool WasCanceled { get; private set; } = false;
+        public TimeSpan ElapsedTime => _stopwatch.Elapsed;
+
+        private readonly Stopwatch _stopwatch = new Stopwatch();
 
         public LogHandler(string message)
         {
             Message = message;
-            StartDate = DateTime.Now;
+        }
+
+        public void StartLogging()
+        {
+            if (!_stopwatch.IsRunning) _stopwatch.Restart();
         }
 
         public void Cancel()
         {
-            lock (Locker)
-            {
-                if (CancelDate == null) CancelDate = DateTime.Now;
-            }
+            _stopwatch.Stop();
+            WasCanceled = true;
         }
     }
 }
