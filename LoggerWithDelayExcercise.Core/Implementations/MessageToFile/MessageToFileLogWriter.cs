@@ -8,8 +8,7 @@ namespace LoggerWithDelayExcercise.Core.Implementations.MessageToFile
     {
         private static readonly object FileLocker = new object();
         private readonly string _fileName;
-        //DEBUG
-        public readonly string _message;
+        private readonly string _message;
 
         public MessageToFileLogWriter(string message, string fileName)
         {

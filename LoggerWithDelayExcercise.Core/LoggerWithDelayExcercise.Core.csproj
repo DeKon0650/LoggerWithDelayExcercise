@@ -42,12 +42,10 @@
   <ItemGroup>
     <Compile Include="ILogWriter.cs" />
     <Compile Include="ILogWriterFactory.cs" />
-    <Compile Include="Implementations\ListLogger\LoggerWithDelay.cs" />
-    <Compile Include="Implementations\ListLogger\LogHandler.cs" />
-    <Compile Include="Implementations\MessageToFile\MessageToFileLogWriter.cs" />
-    <Compile Include="Implementations\MessageToFile\MessageToFileLogWriterFactory.cs" />
     <Compile Include="LoggerWithDelay.cs" />
     <Compile Include="LogHandler.cs" />
+    <Compile Include="Implementations\MessageToFile\MessageToFileLogWriter.cs" />
+    <Compile Include="Implementations\MessageToFile\MessageToFileLogWriterFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
