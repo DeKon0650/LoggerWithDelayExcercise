@@ -8,12 +8,11 @@ namespace LoggerWithDelayExcercise.Core.Implementations.MessageToFile
     public class MessageToFileLogWriter : ILogWriter
     {
         private readonly BlockingCollection<string> _messagesCollection = new BlockingCollection<string>(new ConcurrentQueue<string>());
-        private Task _consumerTask;
 
         public MessageToFileLogWriter(string fileName)
         {
             if (string.IsNullOrWhiteSpace(fileName)) throw new ArgumentException("FileName is empty", nameof(fileName));
-            _consumerTask = Task.Factory.StartNew(() =>
+            Task.Factory.StartNew(() =>
             {
                 //TODO Stop condition
                 while (true)

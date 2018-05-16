@@ -29,6 +29,7 @@ namespace LoggerWithDelayExcercise.ConsoleTest
                 Console.WriteLine("Second have finished");
             });
             Console.ReadLine();
+            _logger.Dispose();
         }
     }
 }

@@ -16,27 +16,29 @@ namespace LoggerWithDelayExcercise.Tests
         public void TestMultithreadLog()
         {
             const int threadCount = 100;
-            const int maxSecondsDelay = 60;
+            const int maxSecondsDelay = 10;
             var logDelay = TimeSpan.FromSeconds(maxSecondsDelay / 2);
-            var logger = new LoggerWithDelay(logDelay, new MessageToFileLogWriterFactory().CreateLogWriter());
-            var random = new Random();
             var loggingMessages = new TestLoggingMessage[threadCount];
-            var testTasks = new Task[loggingMessages.Length];
-            for (int i = 0; i < loggingMessages.Length; i++)
+            using (var logger = new LoggerWithDelay(logDelay, new MessageToFileLogWriterFactory().CreateLogWriter()))
             {
-                var testLogginMessage = new TestLoggingMessage((i + 1).ToString(), TimeSpan.FromSeconds(random.Next(1, maxSecondsDelay + 1)));
-                loggingMessages[i] = testLogginMessage;
-                testTasks[i] = new Task(t =>
+                var random = new Random();
+                var testTasks = new Task[loggingMessages.Length];
+                for (int i = 0; i < loggingMessages.Length; i++)
                 {
-                    var testMessage = (TestLoggingMessage) t;
-                    var handler = logger.LogWithDelay(testMessage.Message);
-                    Thread.Sleep(testMessage.Delay);
-                    handler.Cancel();
-                }, testLogginMessage);
+                    var testLogginMessage = new TestLoggingMessage((i + 1).ToString(), TimeSpan.FromSeconds(random.Next(1, maxSecondsDelay + 1)));
+                    loggingMessages[i] = testLogginMessage;
+                    testTasks[i] = new Task(t =>
+                    {
+                        var testMessage = (TestLoggingMessage) t;
+                        var handler = logger.LogWithDelay(testMessage.Message);
+                        Thread.Sleep(testMessage.Delay);
+                        handler.Cancel();
+                    }, testLogginMessage);
+                }
+                if (File.Exists(MessageToFileLogWriterFactory.FileName)) File.Delete(MessageToFileLogWriterFactory.FileName);
+                testTasks.AsParallel().ForAll(t => t.Start());
+                Task.WaitAll(testTasks);
             }
-            if (File.Exists(MessageToFileLogWriterFactory.FileName)) File.Delete(MessageToFileLogWriterFactory.FileName);
-            testTasks.AsParallel().ForAll(t => t.Start());
-            Task.WaitAll(testTasks);
             var loggedMessages = File.ReadAllLines(MessageToFileLogWriterFactory.FileName);
             foreach (var testLoggingMessage in loggingMessages)
             {

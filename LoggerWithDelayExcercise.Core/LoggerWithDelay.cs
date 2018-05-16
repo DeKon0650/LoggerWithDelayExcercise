@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace LoggerWithDelayExcercise.Core
 {
-    public class LoggerWithDelay
+    public class LoggerWithDelay : IDisposable
     {
         public static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(1);
 
@@ -13,14 +13,14 @@ namespace LoggerWithDelayExcercise.Core
         private readonly ILogWriter _logWriter;
         private readonly TimeSpan _delay;
         private readonly CancellationTokenSource _cancellationTokenSource;
-        private Task _checkTask;
+        private bool _disposed = false;
 
         public LoggerWithDelay(TimeSpan delay, ILogWriter logWriter)
         {
             _logWriter = logWriter;
             _delay = delay;
             _cancellationTokenSource = new CancellationTokenSource();
-            _checkTask = Task.Factory.StartNew(CheckLogs, TaskCreationOptions.LongRunning);
+            Task.Factory.StartNew(CheckLogs, TaskCreationOptions.LongRunning);
         }
 
         public LogHandler LogWithDelay(string message)
@@ -54,7 +54,7 @@ namespace LoggerWithDelayExcercise.Core
                         RemoveFromLogList(log);
                     }
                 }
-            } while (!_cancellationTokenSource.IsCancellationRequested);
+            } while (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested);
         }
 
         public void RemoveFromLogList(LogHandler log)
@@ -65,6 +65,23 @@ namespace LoggerWithDelayExcercise.Core
         private void DoLog(LogHandler log)
         {
             _logWriter.WriteLog(log.Message);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+            if (disposing)
+            {
+                _logs.Clear();
+                _cancellationTokenSource?.Dispose();
+            }
+            _disposed = true;
         }
     }
 }
