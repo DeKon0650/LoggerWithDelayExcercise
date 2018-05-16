@@ -1,6 +1,8 @@
-﻿namespace LoggerWithDelayExcercise.Core
+﻿using System;
+
+namespace LoggerWithDelayExcercise.Core
 {
-    public interface ILogWriter
+    public interface ILogWriter : IDisposable
     {
         void WriteLog(string message);
     }
