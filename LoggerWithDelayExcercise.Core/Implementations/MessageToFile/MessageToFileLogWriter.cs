@@ -15,11 +15,18 @@ namespace LoggerWithDelayExcercise.Core.Implementations.MessageToFile
             if (string.IsNullOrWhiteSpace(fileName)) throw new ArgumentException("FileName is empty", nameof(fileName));
             Task.Factory.StartNew(() =>
             {
-                foreach (var message in _messagesCollection.GetConsumingEnumerable())
+                try
                 {
-                    File.AppendAllLines(fileName, new[] { message });
+                    foreach (var message in _messagesCollection.GetConsumingEnumerable())
+                    {
+                        File.AppendAllLines(fileName, new[] { message });
+                    }
                 }
-            }).ContinueWith(t => _messagesCollection?.Dispose());
+                finally 
+                {
+                    _messagesCollection?.Dispose();
+                }
+            }, TaskCreationOptions.LongRunning);
         }
 
         public void WriteLog(string message)
