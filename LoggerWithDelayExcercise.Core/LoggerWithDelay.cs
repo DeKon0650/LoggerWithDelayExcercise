@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace LoggerWithDelayExcercise.Core
 {
@@ -12,15 +11,14 @@ namespace LoggerWithDelayExcercise.Core
         private readonly ConcurrentDictionary<Guid, LogHandler> _logs = new ConcurrentDictionary<Guid, LogHandler>();
         private readonly ILogWriter _logWriter;
         private readonly TimeSpan _delay;
-        private readonly CancellationTokenSource _cancellationTokenSource;
+        private Timer _timer;
         private bool _disposed = false;
 
         public LoggerWithDelay(TimeSpan delay, ILogWriter logWriter)
         {
             _logWriter = logWriter;
             _delay = delay;
-            _cancellationTokenSource = new CancellationTokenSource();
-            Task.Factory.StartNew(CheckLogs, TaskCreationOptions.LongRunning);
+            StartLogger();
         }
 
         public LogHandler LogWithDelay(string message)
@@ -31,30 +29,32 @@ namespace LoggerWithDelayExcercise.Core
             return log;
         }
 
+        public void StartLogger()
+        {
+            if (_timer == null)
+                _timer = new Timer(state => CheckLogs(), null, TimeSpan.Zero, CheckInterval);
+        }
+
         public void StopLogger()
         {
-            _cancellationTokenSource.Cancel();
+            _timer?.Dispose();
         }
 
         private void CheckLogs()
         {
-            do
+            foreach (var logFromDic in _logs)
             {
-                Thread.Sleep(CheckInterval);
-                foreach (var logFromDic in _logs)
+                var log = logFromDic.Value;
+                if (log.ElapsedTime >= _delay)
                 {
-                    var log = logFromDic.Value;
-                    if (log.ElapsedTime >= _delay)
-                    {
-                        DoLog(log);
-                        RemoveFromLogList(log);
-                    }
-                    else if (log.WasCanceled)
-                    {
-                        RemoveFromLogList(log);
-                    }
+                    DoLog(log);
+                    RemoveFromLogList(log);
                 }
-            } while (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested);
+                else if (log.WasCanceled)
+                {
+                    RemoveFromLogList(log);
+                }
+            }
         }
 
         public void RemoveFromLogList(LogHandler log)
@@ -78,8 +78,7 @@ namespace LoggerWithDelayExcercise.Core
             if (_disposed) return;
             if (disposing)
             {
-                _logs.Clear();
-                _cancellationTokenSource?.Dispose();
+                _timer?.Dispose();
             }
             _disposed = true;
         }
